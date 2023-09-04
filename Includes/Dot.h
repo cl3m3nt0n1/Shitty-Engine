@@ -11,21 +11,23 @@
 
 class Dot : public Entity
 {
-
-    static const int DOT_VEL = 10;
+    static const int DOT_VEL = 5;
 
 public:
-    Dot(float p_x, float p_y, SDL_Texture * tex) : Entity(p_x, p_y, tex)
+    Dot(float x, float y, SDL_Texture * tex) : Entity(x, y, tex)
     {
         currentFrame.w = 32;
         currentFrame.h = 32;
         collider.h = 32 * H_ZOOM_DOT;
         collider.w = 32 * W_ZOOM_DOT;
+
+        mVelX = DOT_VEL;
+        mVelY = DOT_VEL;
     }
 
     void handleEvent( SDL_Event& e )
     {
-        //If a key was pressed
+        /*//If a key was pressed
         if( e.type == SDL_KEYDOWN && e.key.repeat == 0 )
         {
             //Adjust the velocity
@@ -49,35 +51,72 @@ public:
                 case SDLK_RIGHT: mVelX -= DOT_VEL; break;
             }
         }
+        */
     }
 
-    void update()
+    void update(float deltaTime)
     {
         Entity::update();
+        move(deltaTime);
+
     }
 
-    void move(int offset)
+    void move(float deltaTime)
     {
-        if(offset %2)
+        if(x > SCREEN_WIDTH - currentFrame.w * W_ZOOM_DOT)
         {
-            x = offset;
+            collisionState = CollisionState::LEFT;
+            onCollision(collisionState);
         }
-        else
+        if(x < 0)
         {
-            y = offset;
+            collisionState = CollisionState::RIGHT;
+            onCollision(collisionState);
         }
+        if( y < 0 )
+        {
+            collisionState = CollisionState::DOWN;
+            onCollision(collisionState);
+        }
+        if( y + currentFrame.h * H_ZOOM_DOT > SCREEN_HEIGHT )
+        {
+            collisionState = CollisionState::UP;
+            onCollision(collisionState);
+        }
+
+        // Move the dot up and down
+        y += mVelY;
+        x += mVelX;
     }
 
-    void onCollision() override
+    void onCollision(CollisionState& state) override
     {
-        std::cout << "Ball : Collision detected ! " << std::endl;
+        /*
+         * The state is according to collided object
+         * not the collider one.
+         * */
+        switch(state)
+        {
+            case CollisionState::UP:
+                mVelY = -DOT_VEL;
+
+                break;
+            case CollisionState::DOWN:
+                mVelY =  DOT_VEL;
+                break;
+            case CollisionState::LEFT:
+                mVelX = -DOT_VEL;
+                break;
+            case CollisionState::RIGHT:
+                mVelX =  DOT_VEL;
+                break;
+        }
+
     }
 
 private:
     float mVelX = 0;
     float mVelY = 0;
-
 };
-
 
 #endif //PONG_DOT_H

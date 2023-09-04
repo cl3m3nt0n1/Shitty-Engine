@@ -3,12 +3,13 @@
 #ifndef PONG_WALL_H
 #define PONG_WALL_H
 
+#include "Entity.h"
+#include <SDL2/SDL_mixer.h>
+
 #define SCREEN_WIDTH  800
 #define SCREEN_HEIGHT 600
 #define H_ZOOM_WALL 3
 #define W_ZOOM_WALL 2
-
-#include "Entity.h"
 
 class Wall : public Entity
 {
@@ -17,9 +18,12 @@ class Wall : public Entity
         int X;
         int Y;
     }
-            velocity;
+    velocity;
 
 public:
+
+    static unsigned int WALLCOLLISIONEVENT;
+
     Wall(float x, float y, SDL_Texture* tex, unsigned char p_playerNumber) :
             playerNumber(p_playerNumber),
             Entity(x, y, tex)
@@ -28,7 +32,24 @@ public:
         currentFrame.w = 32;
         collider.h = 64 * H_ZOOM_WALL;
         collider.w = 32 * W_ZOOM_WALL;
+
+        Mix_AllocateChannels(1);
+        beep = Mix_LoadWAV("Res/Snd/hit.wav");
+
+/*        // Setting up the Wall's custom event
+        // Triggered on collision
+        WALLCOLLISIONEVENT = SDL_RegisterEvents(1);
+        if(WALLCOLLISIONEVENT != -1)
+        {
+            SDL_memset(&WALLCOLLISIONEVENT, 0, sizeof(WALLCOLLISIONEVENT));
+            collisionEvent.type = WALLCOLLISIONEVENT;
+        }*/
     }
+    ~Wall()
+    {
+        Mix_FreeChunk(beep);
+    }
+
     void update()
     {
         Entity::update();
@@ -40,20 +61,23 @@ public:
             getGood();
 
         collisionDetected = false;
-
         move();
     }
+
     void getMad()
     {
         currentFrame.x = 32;
     }
+
     void getGood()
     {
         currentFrame.x = 0;
     }
-    void onCollision() override
+
+    void onCollision(CollisionState& state) override
     {
-        std::cout << "Wall : Collision detected !" << std::endl;
+//        std::cout << "Wall : Collision detected !" << std::endl;
+        Mix_PlayChannel(0, beep, 1);
         collisionDetected = true;
     }
 
@@ -119,8 +143,11 @@ public:
 private:
     bool collisionDetected = false;
     unsigned char playerNumber;
+    SDL_Event collisionEvent;
 
-    static const int WALL_VEL = 20;
+    Mix_Chunk* beep;
+
+    static const int WALL_VEL = 15;
     velocity vel = {0,0};
 
 };

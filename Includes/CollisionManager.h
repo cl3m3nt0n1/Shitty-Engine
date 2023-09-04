@@ -4,23 +4,32 @@
 #define PONG_COLLISIONMANAGER_H
 
 #include "Entity.h"
+#include "utils.h"
+#include "Dot.h"
+#include "Goal.h"
+#include "ScoreManager.h"
 #include <vector>
-
-enum class CollisionState {
-    NONE,
-    RIGHT,
-    LEFT,
-    UP,
-    DOWN
-};
 
 class CollisionManager
 {
 public:
 
+    CollisionManager(ScoreManager& score) : scoreManager(&score)
+    {
+
+    }
+
     void Register(Entity& entity)
     {
         entities.push_back(&entity);
+    }
+
+    void RegisterDoatAndGoals(Dot& dot, Goal& leftGoal, Goal& rightGoal)
+    {
+        dotPointer = &dot;
+        leftGoalPointer = &leftGoal;
+        rightGoalPointer = &rightGoal;
+
     }
 
     void checkCollisions()
@@ -34,58 +43,74 @@ public:
 
                 if(checkCollision(state, *ent2->getCollider(), *ent1->getCollider()))
                 {
-                    ent1->onCollision();
-                    ent2->onCollision();
+                    ent1->onCollision(state);
+                    ent2->onCollision(state);
                 }
             }
+        }
+    }
+
+    void checkCollisionsDotToGoal()
+    {
+        if(checkCollisionDotToGoal(dotPointer->getCollider(), leftGoalPointer->getCollider()))
+        {
+            leftGoalPointer->onCollision(state);
+            scoreManager->incrementPlayer2Score();
+        }
+        if(checkCollisionDotToGoal(dotPointer->getCollider(), rightGoalPointer->getCollider()))
+        {
+            rightGoalPointer->onCollision(state);
+            scoreManager->incrementPlayer1Score();
         }
     }
 
 private:
     std::vector<Entity*> entities;
+    Dot* dotPointer;
+    Goal* leftGoalPointer;
+    Goal* rightGoalPointer;
+    ScoreManager* scoreManager;
+
     CollisionState state = CollisionState::NONE;
 
-    bool checkCollision(CollisionState& state, SDL_Rect& rect1, SDL_Rect& rect2)
-    {
+    /*
+     * Checks collision between two objects.
+     * Updates the state pointer according to the result rectangle.
+     * The result rectangle is the rectangle that appears when a collision occurs
+     * between rect1 and rect2.
+     * */
+    bool checkCollision(CollisionState& state, SDL_Rect& rect1, SDL_Rect& rect2) {
+
         SDL_Rect result;
-        bool collision = true;
 
         if (SDL_IntersectRect(&rect1, &rect2, &result)) {
-            // Vérifiez les collisions en fonction des côtés du rectangle.
 
-            int dx = result.x - (rect1.x + rect1.w / 2);
-            int dy = result.y - (rect1.y + rect1.h / 2);
+            if (result.y == rect1.y || result.y == rect2.y + rect2.h) {
 
-            int width = rect1.w / 2 + rect2.w / 2;
-            int height = rect1.h / 2 + rect2.h / 2;
+                (result.y == rect1.y) ? state = CollisionState::UP : state = CollisionState::DOWN;
+                return true;
+            }
+            else if (result.x == rect1.x || result.x == rect2.x + rect2.w) {
 
-            if (std::abs(dx) <= width && std::abs(dy) <= height) {
-                if (std::abs(dx) > std::abs(dy)) {
-                    if (dx > 0) {
-                        state = CollisionState::RIGHT;
-                    }
-                    else {
-                        state = CollisionState::LEFT;
-                    }
-                }
-                else {
-                    if (dy > 0) {
-                        state = CollisionState::DOWN;
-                    }
-                    else {
-                        state = CollisionState::UP;
-                    }
-                }
+                (result.x == rect1.x) ? state = CollisionState::LEFT : state = CollisionState::RIGHT;
+                return true;
             }
         }
-        else {
+        else
+        {
             state = CollisionState::NONE;
-            collision = false;
+            return false;
         }
-        return collision;
     }
 
+    bool checkCollisionDotToGoal(SDL_Rect* dotRect, SDL_Rect* goalRect)
+    {
+        if(SDL_HasIntersection(dotRect, goalRect) == SDL_TRUE)
+            return true;
+        else
+            return false;
 
+    }
 };
 
 #endif //PONG_COLLISIONMANAGER_H
