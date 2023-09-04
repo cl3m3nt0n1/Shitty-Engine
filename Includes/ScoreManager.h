@@ -37,6 +37,15 @@ public:
         player2_Score++;
     }
 
+    bool checkForWinner()
+    {
+        if(player1_Score >= MAX_SCORE)
+            return true;
+        if(player2_Score >= MAX_SCORE)
+            return true;
+        return false;
+    }
+
 private:
     const int MAX_SCORE = 10;
     int player1_Score = 0;

@@ -14,64 +14,71 @@ class CollisionManager
 {
 public:
 
-    CollisionManager(ScoreManager& score) : scoreManager(&score)
-    {
-
-    }
-
     void Register(Entity& entity)
     {
         entities.push_back(&entity);
     }
 
-    void RegisterDoatAndGoals(Dot& dot, Goal& leftGoal, Goal& rightGoal)
-    {
-        dotPointer = &dot;
-        leftGoalPointer = &leftGoal;
-        rightGoalPointer = &rightGoal;
+    void checkCollisions() {
 
-    }
+        CollisionState localState;
 
-    void checkCollisions()
-    {
-        for(int i = 0 ; i < entities.size() ; i++)
-        {
-            for(int j = i+1 ; j < entities.size() ; j++)
-            {
-                Entity* ent1 = entities.at(i);
+        // Collision Detection
+        for (int i = 0; i < entities.size(); i++) {
+            Entity* ent1 = entities.at(i);
+            for (int j = i + 1; j < entities.size(); j++) {
                 Entity* ent2 = entities.at(j);
 
-                if(checkCollision(state, *ent2->getCollider(), *ent1->getCollider()))
-                {
-                    ent1->onCollision(state);
-                    ent2->onCollision(state);
+                if (checkCollision(collisionState, *ent1->getCollider(), *ent2->getCollider())) {
+                    // Push the colliding pair into the collisionPairs vector
+                    collisionPairs.emplace_back(ent1, ent2);
+                    localState = collisionState;
                 }
             }
         }
+
+        // Collision resolution
+        for (const auto& pair : collisionPairs) {
+            Entity* ent1 = pair.first;
+            Entity* ent2 = pair.second;
+
+            if (!ent1->getIsColliding()) {
+                ent1->setIsColliding(true);
+                ent1->onCollisionEnter(localState);
+            }
+
+            if (!ent2->getIsColliding()) {
+                ent2->setIsColliding(true);
+                ent2->onCollisionEnter(localState);
+            }
+        }
+
+        // End of collision detection
+        for (Entity* ent : entities) {
+            if (ent->getIsColliding()) {
+                bool stillColliding = false;
+                for (const auto& pair : collisionPairs) {
+                    if (pair.first == ent || pair.second == ent) {
+                        stillColliding = true;
+                        break;
+                    }
+                }
+                if (!stillColliding) {
+                    ent->setIsColliding(false);
+                    ent->onCollisionExit(localState);
+                }
+            }
+        }
+        collisionPairs.clear();
+        localState = CollisionState::NONE;
+        collisionState = CollisionState::NONE;
     }
 
-    void checkCollisionsDotToGoal()
-    {
-        if(checkCollisionDotToGoal(dotPointer->getCollider(), leftGoalPointer->getCollider()))
-        {
-            leftGoalPointer->onCollision(state);
-            scoreManager->incrementPlayer2Score();
-        }
-        if(checkCollisionDotToGoal(dotPointer->getCollider(), rightGoalPointer->getCollider()))
-        {
-            rightGoalPointer->onCollision(state);
-            scoreManager->incrementPlayer1Score();
-        }
-    }
 
 private:
     std::vector<Entity*> entities;
-    Dot* dotPointer;
-    Goal* leftGoalPointer;
-    Goal* rightGoalPointer;
-    ScoreManager* scoreManager;
-
-    CollisionState state = CollisionState::NONE;
+    std::vector<std::pair<Entity*, Entity*>> collisionPairs;
+    CollisionState collisionState;
 
     /*
      * Checks collision between two objects.
@@ -103,14 +110,6 @@ private:
         }
     }
 
-    bool checkCollisionDotToGoal(SDL_Rect* dotRect, SDL_Rect* goalRect)
-    {
-        if(SDL_HasIntersection(dotRect, goalRect) == SDL_TRUE)
-            return true;
-        else
-            return false;
-
-    }
 };
 
 #endif //PONG_COLLISIONMANAGER_H

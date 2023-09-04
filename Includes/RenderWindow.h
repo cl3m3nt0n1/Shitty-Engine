@@ -300,6 +300,7 @@ public:
         SDL_FreeSurface(messagebg);
     }
 
+    // TODO : TOFIX
     void renderScore()
     {
         SDL_Surface* player1Score = TTF_RenderText_Blended(smallFont, scoreManager->getPlayer1ScoreAsString(), colours[4]);

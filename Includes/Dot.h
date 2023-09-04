@@ -11,7 +11,7 @@
 
 class Dot : public Entity
 {
-    static const int DOT_VEL = 5;
+    static const int DOT_VEL = 6;
 
 public:
     Dot(float x, float y, SDL_Texture * tex) : Entity(x, y, tex)
@@ -25,43 +25,14 @@ public:
         mVelY = DOT_VEL;
     }
 
-    void handleEvent( SDL_Event& e )
-    {
-        /*//If a key was pressed
-        if( e.type == SDL_KEYDOWN && e.key.repeat == 0 )
-        {
-            //Adjust the velocity
-            switch( e.key.keysym.sym )
-            {
-                case SDLK_UP: mVelY -= DOT_VEL; break;
-                case SDLK_DOWN: mVelY += DOT_VEL; break;
-                case SDLK_LEFT: mVelX -= DOT_VEL; break;
-                case SDLK_RIGHT: mVelX += DOT_VEL; break;
-            }
-        }
-            //If a key was released
-        else if( e.type == SDL_KEYUP && e.key.repeat == 0 )
-        {
-            //Adjust the velocity
-            switch( e.key.keysym.sym )
-            {
-                case SDLK_UP: mVelY += DOT_VEL; break;
-                case SDLK_DOWN: mVelY -= DOT_VEL; break;
-                case SDLK_LEFT: mVelX += DOT_VEL; break;
-                case SDLK_RIGHT: mVelX -= DOT_VEL; break;
-            }
-        }
-        */
-    }
-
-    void update(float deltaTime)
+    void update() override
     {
         Entity::update();
-        move(deltaTime);
+        move();
 
     }
 
-    void move(float deltaTime)
+    void move()
     {
         if(x > SCREEN_WIDTH - currentFrame.w * W_ZOOM_DOT)
         {
@@ -111,6 +82,31 @@ public:
                 mVelX =  DOT_VEL;
                 break;
         }
+
+    }
+
+    void onCollisionEnter(CollisionState &state) override
+    {
+        switch(state)
+        {
+            case CollisionState::UP:
+                mVelY = -DOT_VEL;
+                break;
+            case CollisionState::DOWN:
+                mVelY =  DOT_VEL;
+                break;
+            case CollisionState::LEFT:
+                mVelX = -DOT_VEL;
+                break;
+            case CollisionState::RIGHT:
+                mVelX =  DOT_VEL;
+                break;
+        }
+
+    }
+
+    void onCollisionExit(CollisionState &state) override
+    {
 
     }
 

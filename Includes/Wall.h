@@ -45,6 +45,7 @@ public:
             collisionEvent.type = WALLCOLLISIONEVENT;
         }*/
     }
+
     ~Wall()
     {
         Mix_FreeChunk(beep);
@@ -53,14 +54,6 @@ public:
     void update()
     {
         Entity::update();
-        if(collisionDetected)
-        {
-            getMad();
-        }
-        else
-            getGood();
-
-        collisionDetected = false;
         move();
     }
 
@@ -78,10 +71,26 @@ public:
     {
 //        std::cout << "Wall : Collision detected !" << std::endl;
         Mix_PlayChannel(0, beep, 1);
+/*
         collisionDetected = true;
+*/
     }
 
-    void handleEvent(SDL_Event& e)
+    void onCollisionEnter(CollisionState &state) override
+    {
+        getMad();
+        Mix_PlayChannel(0, beep, 1);
+
+        std::cout << "Wall : onCollisionEnter" << std::endl;
+    }
+
+    void onCollisionExit(CollisionState &state) override
+    {
+        getGood();
+        std::cout << "Wall : onCollisionExit" << std::endl;
+    }
+
+    void handleEvent(SDL_Event& e) override
     {
         if(playerNumber == 1) // Player 1
         {

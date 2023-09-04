@@ -6,15 +6,13 @@
 #include "../Includes/Entity.h"
 #include "../Includes/CollisionManager.h"
 #include "../Includes/Wall.h"
-#include "../Includes/Dot.h"
-#include "../Includes/ScoreManager.h"
 #include "../Includes/RenderWindow.h"
 
 
 /*
  * TODO :
  *      - Main Title screen X
- *      - Score
+ *      - Score X
  *      - Game Over Screen
  *      - Sounds X
  * */
@@ -54,8 +52,6 @@ int main() {
     if(!init())
         exit(-1);
 
-    float initTime = 0.0f, deltaTime = 0.0f, timeSinceStart = 0.0f;
-
     ScoreManager scoreManager;
 
     // Loading BGMusic
@@ -72,34 +68,39 @@ int main() {
     Background background(backgroundTex);
     Dot ball(200, 300, ballTexture);
     Wall wall(650, 200, wallTexture, 1), walter(100, 200, wallTexture, 2);
-    Goal leftGoal(0, 0), rightGoal(SCREEN_WIDTH - 50, 0);
+    Goal leftGoal(0, 0, true, scoreManager), rightGoal(SCREEN_WIDTH - 50, 0, false, scoreManager);
 
-    CollisionManager collisionManager(scoreManager);
+    CollisionManager collisionManager;
     collisionManager.Register(ball);
     collisionManager.Register(wall);
     collisionManager.Register(walter);
-    collisionManager.RegisterDoatAndGoals(ball,leftGoal,rightGoal);
+    collisionManager.Register(leftGoal);
+    collisionManager.Register(rightGoal);
 
-    bool run = true, mainTitle = true;
+    bool run = true, mainTitle = true, gameOver = false;
     SDL_Event e;
 
-    while (run) {
+    float timeSinceGameLoop = 0.0f;
 
-        timeSinceStart = getTimeInSeconds();
-        deltaTime = timeSinceStart - initTime;
-        initTime = timeSinceStart;
+    while (run) {
 
         while (SDL_PollEvent(&e))
         {
             if (e.type == SDL_QUIT)
                 run = false;
+
             if(e.key.keysym.sym == SDLK_RETURN && mainTitle)
             {
                 mainTitle = false;
+                timeSinceGameLoop = SDL_GetTicks();
             }
 
+            if(e.key.keysym.sym == SDLK_RETURN && gameOver)
+            {
+                run = false;
+            }
 
-            if(!mainTitle)
+            if(!mainTitle && !gameOver)
             {
                 wall.handleEvent(e);
                 walter.handleEvent(e);
@@ -119,24 +120,35 @@ int main() {
         }
 
         // Main Game loop
-        else
+        else if(!mainTitle && !gameOver)
         {
             renderWin.clear();
 
-            collisionManager.checkCollisions();
-            collisionManager.checkCollisionsDotToGoal();
+            // Prevent stupid init collisions
+            if(SDL_GetTicks() >= timeSinceGameLoop + 0.02f)
+                collisionManager.checkCollisions();
 
-            ball.update(deltaTime);
+            if(scoreManager.checkForWinner())
+                gameOver = true;
+
+            ball.update();
             wall.update();
             walter.update();
 
             renderWin.render(background);
             renderWin.renderScore();
-            renderWin.render(leftGoal);
-            renderWin.render(rightGoal);
             renderWin.render(ball);
             renderWin.render(wall);
             renderWin.render(walter);
+            renderWin.display();
+        }
+
+        else // Game Over
+        {
+            renderWin.clear();
+            renderWin.render(background);
+            renderWin.renderTitle(SCREEN_WIDTH / 2 - 320, 150 + (25 * sin(SDL_GetTicks() * 0.002)), "Shitty Pong");
+            renderWin.render(190, 500 + (25 * sin(SDL_GetTicks() * 0.002)), "GAME OVER");
             renderWin.display();
         }
     }

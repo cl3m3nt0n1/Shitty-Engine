@@ -49,16 +49,22 @@ public:
 
     }
 
+    virtual void handleEvent(SDL_Event& e)
+    {
+
+    }
+
     virtual void onCollision(CollisionState&)
     {
-        std::cout << "ENTITY : Collision Detected !" << std::endl;
+
     }
 
-    virtual void onCollisionEnter()
+    virtual void onCollisionEnter(CollisionState&)
     {
 
     }
-    virtual void onCollisionExit()
+
+    virtual void onCollisionExit(CollisionState&)
     {
 
     }
@@ -71,8 +77,7 @@ protected:
     float x, y;
     SDL_Rect collider;
     bool isColliding = false;
-
-    CollisionState collisionState = CollisionState::NONE;
+    CollisionState collisionState;
 
 };
 
