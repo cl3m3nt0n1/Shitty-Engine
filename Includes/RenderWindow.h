@@ -300,13 +300,12 @@ public:
         SDL_FreeSurface(messagebg);
     }
 
-    // TODO : TOFIX
     void renderScore()
     {
         SDL_Surface* player1Score = TTF_RenderText_Blended(smallFont, scoreManager->getPlayer1ScoreAsString(), colours[4]);
-        SDL_Surface* player1Scorebg = TTF_RenderText_Blended(smallFont, scoreManager->getPlayer1ScoreAsString(), colours[4]);
+        SDL_Surface* player1Scorebg = TTF_RenderText_Blended(smallFont, scoreManager->getPlayer1ScoreAsString(), colours[0]);
         SDL_Surface* player2Score = TTF_RenderText_Blended(smallFont, scoreManager->getPlayer2ScoreAsString(), colours[4]);
-        SDL_Surface* player2Scorebg = TTF_RenderText_Blended(smallFont, scoreManager->getPlayer2ScoreAsString(), colours[4]);
+        SDL_Surface* player2Scorebg = TTF_RenderText_Blended(smallFont, scoreManager->getPlayer2ScoreAsString(), colours[0]);
 
         SDL_Texture* player1ScoreTex = SDL_CreateTextureFromSurface(renderer, player1Score);
         SDL_Texture* player1ScoreTexbg = SDL_CreateTextureFromSurface(renderer, player1Scorebg);
@@ -341,8 +340,8 @@ public:
 
         SDL_Rect player1BGDst
         {
-                player1BGSrc.x - 3,
-                player1BGSrc.y + 3,
+                player1FGDst.x - 3,
+                player1FGDst.y + 3,
                 player1BGSrc.w,
                 player1BGSrc.h
         };
@@ -374,8 +373,8 @@ public:
 
         SDL_Rect player2BGDst
                 {
-                        player2BGSrc.x - 3,
-                        player2BGSrc.y + 3,
+                        player2FGDst.x - 3,
+                        player2FGDst.y + 3,
                         player2BGSrc.w,
                         player2BGSrc.h
                 };
@@ -404,7 +403,11 @@ private:
     SDL_Window*   window;
     SDL_Renderer* renderer;
     SDL_Surface* message;
-    SDL_Color colours[5] = {{0,0,0,200}, {105, 106, 106, 255}, {48, 96, 130, 255}, { 55, 148, 110, 255}, { 55, 175, 140, 220}};
+    SDL_Color colours[5] = {{0,0,0,200},
+                            {105, 106, 106, 255},
+                            {48, 96, 130, 255},
+                            { 55, 148, 110, 255},
+                            { 55, 175, 140, 220}};
     TTF_Font* font = TTF_OpenFont("Res/fonts/Kaph-Regular.ttf",76);
     TTF_Font* smallFont = TTF_OpenFont("Res/fonts/Kaph-Italic.ttf", 28);
     ScoreManager* scoreManager;
