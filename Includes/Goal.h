@@ -21,12 +21,12 @@ public:
     {
         if(goalSide == LEFTGOAL)
         {
-            score->incrementPlayer1Score();
+            score->incrementPlayer2Score();
         }
 
         if(goalSide == RIGHTGOAL)
         {
-            score->incrementPlayer2Score();
+            score->incrementPlayer1Score();
         }
     }
 

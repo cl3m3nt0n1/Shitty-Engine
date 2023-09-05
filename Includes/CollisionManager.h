@@ -69,6 +69,7 @@ public:
                 }
             }
         }
+
         collisionPairs.clear();
         localState = CollisionState::NONE;
         collisionState = CollisionState::NONE;
@@ -87,28 +88,43 @@ private:
      * between rect1 and rect2.
      * */
     bool checkCollision(CollisionState& state, SDL_Rect& rect1, SDL_Rect& rect2) {
+        // Calcule les intervalles de collision sur l'axe des X
+        int rect1Left = rect1.x;
+        int rect1Right = rect1.x + rect1.w;
+        int rect2Left = rect2.x;
+        int rect2Right = rect2.x + rect2.w;
 
-        SDL_Rect result;
+        // Calcule les intervalles de collision sur l'axe des Y
+        int rect1Top = rect1.y;
+        int rect1Bottom = rect1.y + rect1.h;
+        int rect2Top = rect2.y;
+        int rect2Bottom = rect2.y + rect2.h;
 
-        if (SDL_IntersectRect(&rect1, &rect2, &result)) {
-
-            if (result.y == rect1.y || result.y == rect2.y + rect2.h) {
-
-                (result.y == rect1.y) ? state = CollisionState::UP : state = CollisionState::DOWN;
-                return true;
-            }
-            else if (result.x == rect1.x || result.x == rect2.x + rect2.w) {
-
-                (result.x == rect1.x) ? state = CollisionState::LEFT : state = CollisionState::RIGHT;
-                return true;
-            }
-        }
-        else
-        {
-            state = CollisionState::NONE;
+        // Vérifie s'il y a collision sur l'axe des X
+        if (rect1Right <= rect2Left || rect1Left >= rect2Right) {
             return false;
         }
+
+        // Vérifie s'il y a collision sur l'axe des Y
+        if (rect1Bottom <= rect2Top || rect1Top >= rect2Bottom) {
+            return false;
+        }
+
+        // Si collision, détermine le côté de la collision
+        state = CollisionState::NONE;
+        if (rect1Bottom > rect2Top && rect1Top < rect2Top) {
+            state = CollisionState::UP;
+        } else if (rect1Top < rect2Bottom && rect1Bottom > rect2Bottom) {
+            state = CollisionState::DOWN;
+        } else if (rect1Right > rect2Left && rect1Left < rect2Left) {
+            state = CollisionState::LEFT;
+        } else if (rect1Left < rect2Right && rect1Right > rect2Right) {
+            state = CollisionState::RIGHT;
+        }
+
+        return true;
     }
+
 
 };
 

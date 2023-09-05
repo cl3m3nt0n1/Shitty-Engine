@@ -22,8 +22,6 @@ class Wall : public Entity
 
 public:
 
-    static unsigned int WALLCOLLISIONEVENT;
-
     Wall(float x, float y, SDL_Texture* tex, unsigned char p_playerNumber) :
             playerNumber(p_playerNumber),
             Entity(x, y, tex)
@@ -80,14 +78,11 @@ public:
     {
         getMad();
         Mix_PlayChannel(0, beep, 1);
-
-        std::cout << "Wall : onCollisionEnter" << std::endl;
     }
 
     void onCollisionExit(CollisionState &state) override
     {
         getGood();
-        std::cout << "Wall : onCollisionExit" << std::endl;
     }
 
     void handleEvent(SDL_Event& e) override
@@ -150,14 +145,10 @@ public:
     }
 
 private:
-    bool collisionDetected = false;
-    unsigned char playerNumber;
-    SDL_Event collisionEvent;
-
-    Mix_Chunk* beep;
-
     static const int WALL_VEL = 15;
     velocity vel = {0,0};
+    unsigned char playerNumber;
+    Mix_Chunk* beep;
 
 };
 

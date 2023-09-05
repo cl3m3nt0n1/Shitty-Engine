@@ -8,23 +8,8 @@
 #include "../Includes/Wall.h"
 #include "../Includes/RenderWindow.h"
 
-
-/*
- * TODO :
- *      - Main Title screen X
- *      - Score X
- *      - Game Over Screen
- *      - Sounds X
- * */
-
-
 #define SCREEN_WIDTH  800
 #define SCREEN_HEIGHT 600
-
-float getTimeInSeconds()
-{
-    return SDL_GetTicks() * 0.001;
-}
 
 bool init()
 {

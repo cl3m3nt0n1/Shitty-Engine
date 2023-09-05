@@ -11,7 +11,7 @@
 
 class Dot : public Entity
 {
-    static const int DOT_VEL = 6;
+    static const int DOT_VEL = 7;
 
 public:
     Dot(float x, float y, SDL_Texture * tex) : Entity(x, y, tex)
@@ -105,10 +105,6 @@ public:
 
     }
 
-    void onCollisionExit(CollisionState &state) override
-    {
-
-    }
 
 private:
     float mVelX = 0;
